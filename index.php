@@ -28,30 +28,68 @@
     </head>
 
     <body class="text-center">
-        <h1>WordPress Ajax Example</h1>
-        <p>Click on a category and see how their posts are displayed.</p>
+        <article role="article">
+          <h1>WordPress Ajax Example</h1>
+          <p>Click on a category and see how their posts are displayed.</p>
+          <?php
 
-        <?php
+          $categories = get_categories(); ?>
 
-        $categories = get_categories(); ?>
+          <table class="table table-striped">
+              <tr>
+                  <?php foreach ( $categories as $cat ) { ?>
+                      <td id="cat-<?php echo $cat->term_id; ?>">
+                          <a class="<?php echo $cat->slug; ?> ajax" data-cat="<?php echo $cat->term_id ?>">
+                              <?php echo $cat->name; ?>
+                          </a>
+                      </td>
+                  <?php } ?>
+              </tr>
+          </table>
 
-        <table class="table table-striped">
+          <div id="loading-animation" style="display: none;">
+              <img src="http://www.thuntech.com/images/loading.gif"/>
+          </div>
+
+          <div id="category-post-content"></div>
+        </article>
+
+        <article role="article">
+          <h1>WordPress Ajax <strong>Archive</strong> Example</h1>
+          <p>Different than other one, here we can select a month and category and show the posts below it.</p>
+
+          <table id="archive-browser" class="table table-striped">
             <tr>
-                <?php foreach ( $categories as $cat ) { ?>
-                    <td id="cat-<?php echo $cat->term_id; ?>">
-                        <a class="<?php echo $cat->slug; ?> ajax" data-cat="<?php echo $cat->term_id ?>">
-                            <?php echo $cat->name; ?>
-                        </a>
-                    </td>
-                <?php } ?>
+              <td>
+                <h4>Month</h4>
+                <select id="month-choice">
+                  <option val="no-choice"> &mdash; </option>
+                  <?php wp_get_archives(array(
+
+                    'type'    => 'monthly',
+                    'format'  => 'option'
+
+                  )); ?>
+                </select>
+              </td>
+              <td>
+                <h4>Category</h4>
+                <?php
+
+                  wp_dropdown_categories('show_option_none= -- ');
+
+                ?>
+              </td>
             </tr>
-        </table>
+          </table>
 
-        <div id="loading-animation" style="display: none;">
-            <img src="http://www.thuntech.com/images/loading.gif"/>
-        </div>
+          <div id="archive-pot"></div>
+        </article>
 
-        <div id="category-post-content"></div>
+        <select name="archive-dropdown" onchange="document.location.href=this.options[this.selectedIndex].value;">
+          <option value=""><?php echo esc_attr( __( 'Select Month' ) ); ?></option>
+          <?php wp_get_archives( array( 'type' => 'monthly', 'format' => 'option', 'show_post_count' => 1 ) ); ?>
+        </select>
 
         <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
         <script>
@@ -65,19 +103,60 @@
                     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); //must echo it ?>';
 
                     $.ajax({
-                        type: 'POST',
-                        url: ajaxurl,
-                        data: {"action": "load-filter", cat: catID },
-                        success: function(response) {
-                            $("#category-post-content").html(response);
-                            $("#loading-animation").hide();
-                            return false;
-                        }
+                      type: 'POST',
+                      url: ajaxurl,
+                      data: {"action": "load-filter", cat: catID },
+                      success: function(response) {
+                        $("#category-post-content").html(response);
+                        $("#loading-animation").hide();
+                        return false;
+                      }
                     });
                 });
             }
 
+            function ajaxSelect() {
+              $("#archive-wrapper").height($("#archive-pot").height());
+
+              $("#archive-browser select").change(function() {
+
+                $("#archive-pot")
+                  .empty()
+                  .html("<div style='text-align: center; padding: 30px;'><img src='http://www.thuntech.com/images/loading.gif' /></div>");
+
+                var dateArray = $("#month-choice").val().split("/");
+                var y = dateArray[3];
+                var m = dateArray[4];
+                var c = $("#cat").val();
+
+                // var archive_url = '<?php echo get_template_directory_uri() ?>/archive-ajax.php';
+
+                $.ajax({
+
+                  url: "/wordpress/?page_id=23/",
+                  dataType: "html",
+                  type: "POST",
+                  data: ({
+                    "digwp_y": y,
+                    "digwp_m" : m,
+                    "digwp_c" : c
+                  }),
+                  success: function(data) {
+                    $("#archive-pot").html(data);
+
+                    $("#archive-wrapper").animate({
+                      height: $("#archives-table tr").length * 50
+                    });
+
+                  }
+
+                });
+
+              });
+            }
+
             cat_ajax_get();
+            ajaxSelect();
         </script>
     </body>
 </html>
