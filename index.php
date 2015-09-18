@@ -39,7 +39,9 @@
             <tr>
                 <?php foreach ( $categories as $cat ) { ?>
                     <td id="cat-<?php echo $cat->term_id; ?>">
-                        <a class="<?php echo $cat->slug; ?> ajax" onclick="cat_ajax_get('<?php echo $cat->term_id; ?>');"><?php echo $cat->name; ?></a>
+                        <a class="<?php echo $cat->slug; ?> ajax" data-cat="<?php echo $cat->term_id ?>">
+                            <?php echo $cat->name; ?>
+                        </a>
                     </td>
                 <?php } ?>
             </tr>
@@ -53,22 +55,29 @@
 
         <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
         <script>
-            function cat_ajax_get(catID) {
-                $("a.ajax").removeClass("active");
-                $("#cat-" + catID + " a").addClass("active"); //adds class current to the category menu item being displayed so you can style it with css
-                $("#loading-animation").show();
-                var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); //must echo it ?>';
-                $.ajax({
-                    type: 'POST',
-                    url: ajaxurl,
-                    data: {"action": "load-filter", cat: catID },
-                    success: function(response) {
-                        $("#category-post-content").html(response);
-                        $("#loading-animation").hide();
-                        return false;
-                    }
+            function cat_ajax_get() {
+                $('a.ajax').on('click' , function() {
+                    var catID = $(this).attr('data-cat');
+
+                    $("a.ajax").removeClass("active");
+                    $("#cat-" + catID + " a").addClass("active"); //adds class current to the category menu item being displayed so you can style it with css
+                    $("#loading-animation").show();
+                    var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); //must echo it ?>';
+
+                    $.ajax({
+                        type: 'POST',
+                        url: ajaxurl,
+                        data: {"action": "load-filter", cat: catID },
+                        success: function(response) {
+                            $("#category-post-content").html(response);
+                            $("#loading-animation").hide();
+                            return false;
+                        }
+                    });
                 });
             }
+
+            cat_ajax_get();
         </script>
     </body>
 </html>
