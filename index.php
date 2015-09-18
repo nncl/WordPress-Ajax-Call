@@ -19,6 +19,11 @@
             .active {
                 font-weight: bold;
             }
+
+            a {
+                color: #000;
+                cursor: pointer;
+            }
         </style>
     </head>
 
@@ -34,7 +39,7 @@
             <tr>
                 <?php foreach ( $categories as $cat ) { ?>
                     <td id="cat-<?php echo $cat->term_id; ?>">
-                        <a class="<?php echo $cat->slug; ?> ajax" onclick="cat_ajax_get('<?php echo $cat->term_id; ?>');" href="#"><?php echo $cat->name; ?></a>
+                        <a class="<?php echo $cat->slug; ?> ajax" onclick="cat_ajax_get('<?php echo $cat->term_id; ?>');"><?php echo $cat->name; ?></a>
                     </td>
                 <?php } ?>
             </tr>
